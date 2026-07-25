@@ -9,11 +9,10 @@ import { BooksModule } from './books/books.module';
 import { MoviesModule } from './movies/movies.module';
 import { ProductsModule } from './products/products.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { PrismaService } from './prisma.service';
 
 @Module({
   imports: [NotesModule, TodosModule, StudentsModule, EmployeesModule, BooksModule, MoviesModule, ProductsModule, PrismaModule],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [AppService],
 })
 export class AppModule {}
