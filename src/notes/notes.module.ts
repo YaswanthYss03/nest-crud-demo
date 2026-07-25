@@ -6,4 +6,5 @@ import { NotesController } from './notes.controller';
   controllers: [NotesController],
   providers: [NotesService],
 })
+
 export class NotesModule {}

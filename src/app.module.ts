@@ -10,9 +10,13 @@ import { MoviesModule } from './movies/movies.module';
 import { ProductsModule } from './products/products.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma.service';
+import { ConfigModule } from '@nestjs/config'
 
 @Module({
-  imports: [NotesModule, TodosModule, StudentsModule, EmployeesModule, BooksModule, MoviesModule, ProductsModule, PrismaModule],
+  imports: [NotesModule, TodosModule, StudentsModule, EmployeesModule, BooksModule, MoviesModule, ProductsModule, PrismaModule, 
+    ConfigModule.forRoot({
+      isGlobal: true,
+    })],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
