@@ -1,26 +1,63 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 
 @Injectable()
 export class StudentsService {
-  create(createStudentDto: CreateStudentDto) {
-    return 'This action adds a new student';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createStudentDto: CreateStudentDto) {
+    return await this.prisma.student.create({
+      data: createStudentDto,
+    });
   }
 
-  findAll() {
-    return `This action returns all students`;
+  async findAll(search?: string, department?: string) {
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (department) {
+      where.department = { contains: department, mode: 'insensitive' };
+    }
+
+    return await this.prisma.student.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} student`;
+  async findOne(id: number) {
+    const student = await this.prisma.student.findUnique({
+      where: { id },
+    });
+
+    if (!student) {
+      throw new NotFoundException(`Student with ID ${id} not found`);
+    }
+
+    return student;
   }
 
-  update(id: number, updateStudentDto: UpdateStudentDto) {
-    return `This action updates a #${id} student`;
+  async update(id: number, updateStudentDto: UpdateStudentDto) {
+    await this.findOne(id);
+    return await this.prisma.student.update({
+      where: { id },
+      data: updateStudentDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} student`;
+  async remove(id: number) {
+    await this.findOne(id);
+    return await this.prisma.student.delete({
+      where: { id },
+    });
   }
 }
+
