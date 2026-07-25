@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StudentsController } from './students.controller';
 import { StudentsService } from './students.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 describe('StudentsController', () => {
   let controller: StudentsController;
@@ -8,7 +9,21 @@ describe('StudentsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [StudentsController],
-      providers: [StudentsService],
+      providers: [
+        StudentsService,
+        {
+          provide: PrismaService,
+          useValue: {
+            student: {
+              create: jest.fn(),
+              findMany: jest.fn(),
+              findUnique: jest.fn(),
+              update: jest.fn(),
+              delete: jest.fn(),
+            },
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<StudentsController>(StudentsController);
@@ -18,3 +33,4 @@ describe('StudentsController', () => {
     expect(controller).toBeDefined();
   });
 });
+
