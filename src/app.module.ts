@@ -9,7 +9,6 @@ import { BooksModule } from './books/books.module';
 import { MoviesModule } from './movies/movies.module';
 import { ProductsModule } from './products/products.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { PrismaService } from './prisma.service';
 import { ConfigModule } from '@nestjs/config'
 
 @Module({
@@ -18,6 +17,6 @@ import { ConfigModule } from '@nestjs/config'
       isGlobal: true,
     })],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [AppService],
 })
 export class AppModule {}

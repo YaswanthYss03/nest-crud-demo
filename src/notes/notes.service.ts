@@ -1,73 +1,63 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
-
-import { Note } from './entities/note.entity'
-
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class NotesService {
-  
-  private notes : Note[] = [];
-  private nextId = 1;
+  constructor(private readonly prisma: PrismaService) {}
 
- //This action adds a new note
-  create(createNoteDto: CreateNoteDto) {
-    const note: Note = {
-      id:this.nextId++,
-      ...createNoteDto,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.notes.push(note);
-
-    // console.log(this.notes);
-    return note;
+  // This action adds a new note
+  async create(createNoteDto: CreateNoteDto) {
+    return this.prisma.note.create({
+      data: createNoteDto,
+    });
   }
 
-
-  //Used to get all the notes
-  findAll() {
-    return this.notes;
+  // Used to get all the notes
+  async findAll() {
+    return this.prisma.note.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   }
 
-
-  //Used to Find the exact Note using the id
-  findOne(id: number) {
-    const note = this.notes.find(note => note.id === id);
-    if(!note){
-      throw new NotFoundException(`Note with id ${id} not found`)
-    }
-    return note
-  }
-
-
-  //Used to Update the notes using their id
-  update(id: number, updateNoteDto: UpdateNoteDto) {
-    const note = this.findOne(id);
-
-    Object.assign(note, updateNoteDto)
-
-    note.updatedAt = new Date();
-
-    return note;
-  }
-
-
-  //Used to Delete the notes Using their id
-  remove(id: number) {
-    const index = this.notes.findIndex(note => note.id === id);
-
-    if(index === -1){
+  // Used to Find the exact Note using the id
+  async findOne(id: number) {
+    const note = await this.prisma.note.findUnique({
+      where: { id },
+    });
+    if (!note) {
       throw new NotFoundException(`Note with id ${id} not found`);
     }
+    return note;
+  }
 
-    const deleteNote = this.notes[index];
-    this.notes.splice(index,1);
+  // Used to Update the notes using their id
+  async update(id: number, updateNoteDto: UpdateNoteDto) {
+    // Check if the note exists first to throw NotFoundException if not found
+    await this.findOne(id);
+
+    return this.prisma.note.update({
+      where: { id },
+      data: updateNoteDto,
+    });
+  }
+
+  // Used to Delete the notes Using their id
+  async remove(id: number) {
+    // Check if the note exists first to throw NotFoundException if not found
+    const note = await this.findOne(id);
+
+    const deletedNote = await this.prisma.note.delete({
+      where: { id },
+    });
 
     return {
       message: 'Note deleted successfully',
-      deleteNote,
+      deleteNote: deletedNote,
     };
   }
 }
+
