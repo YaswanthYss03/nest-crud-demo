@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
@@ -8,9 +13,13 @@ export class StudentsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createStudentDto: CreateStudentDto) {
-    return await this.prisma.student.create({
-      data: createStudentDto,
-    });
+    try {
+      return await this.prisma.student.create({
+        data: createStudentDto,
+      });
+    } catch (error) {
+      this.rethrowKnownConstraintError(error);
+    }
   }
 
   async findAll(search?: string, department?: string) {
@@ -46,11 +55,20 @@ export class StudentsService {
   }
 
   async update(id: number, updateStudentDto: UpdateStudentDto) {
+    if (Object.keys(updateStudentDto).length === 0) {
+      throw new BadRequestException('At least one field is required');
+    }
+
     await this.findOne(id);
-    return await this.prisma.student.update({
-      where: { id },
-      data: updateStudentDto,
-    });
+
+    try {
+      return await this.prisma.student.update({
+        where: { id },
+        data: updateStudentDto,
+      });
+    } catch (error) {
+      this.rethrowKnownConstraintError(error);
+    }
   }
 
   async remove(id: number) {
@@ -58,6 +76,19 @@ export class StudentsService {
     return await this.prisma.student.delete({
       where: { id },
     });
+  }
+
+  private rethrowKnownConstraintError(error: unknown): never {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 'P2002'
+    ) {
+      throw new ConflictException('A student with this email already exists');
+    }
+
+    throw error;
   }
 }
 

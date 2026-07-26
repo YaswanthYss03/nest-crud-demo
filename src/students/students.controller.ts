@@ -12,6 +12,7 @@ import {
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
+import { StudentsQueryDto } from './dto/students-query.dto';
 
 @Controller('students')
 export class StudentsController {
@@ -23,11 +24,8 @@ export class StudentsController {
   }
 
   @Get()
-  findAll(
-    @Query('search') search?: string,
-    @Query('department') department?: string,
-  ) {
-    return this.studentsService.findAll(search, department);
+  findAll(@Query() query: StudentsQueryDto) {
+    return this.studentsService.findAll(query.search, query.department);
   }
 
   @Get(':id')
