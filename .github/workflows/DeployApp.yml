@@ -1,4 +1,4 @@
-name: Build and Push Students Image
+name: Build and Push students Image to ECR
 
 on:
   push:
